@@ -1,14 +1,18 @@
-import { ReactNode } from "react";
+import { HTMLAttributes, ReactNode } from "react";
 
 type HeadingVariant = "h1" | "h2" | "h3";
 
-interface HeadingProps {
+interface HeadingProps extends HTMLAttributes<HTMLHeadingElement> {
   variant?: HeadingVariant;
   children?: ReactNode;
   className?: string;
 }
 
-const BaseHeading = ({ variant = "h1", className, ...props }: HeadingProps) => {
+const BaseHeading = ({
+  variant = "h1",
+  className = "",
+  ...props
+}: HeadingProps) => {
   if (variant === "h1") {
     return <h1 className={`text-2xl font-bold ${className}`} {...props} />;
   }

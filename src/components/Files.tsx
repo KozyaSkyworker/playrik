@@ -3,10 +3,7 @@
 import { useRef, useState } from "react";
 import { Heading } from "./Heading";
 
-interface AudioFile {
-  src: string;
-  title: string;
-}
+import { AudioFile, File } from "./File";
 
 export const Files = () => {
   const [files, setFiles] = useState<AudioFile[]>([]);
@@ -79,18 +76,13 @@ export const Files = () => {
           className="-z-1 hidden pointer-events-none"
         />
       </div>
+
       {files && files.length > 0 && (
         <div className="flex flex-col gap-4">
           <Heading variant="h2">Uploaded files</Heading>
           <div className="flex flex-col gap-4">
             {files.map((file) => (
-              <div
-                key={crypto.randomUUID()}
-                className="bg-gray-100 rounded p-4"
-              >
-                <Heading variant="h3">{file.title}</Heading>
-                <audio controls src={file.src} />
-              </div>
+              <File key={crypto.randomUUID()} {...file} />
             ))}
           </div>
         </div>
