@@ -1,5 +1,5 @@
-import File from "@/components/File";
+import { Files } from "@/components/Files";
 
 export default function Home() {
-  return <File />;
+  return <Files />;
 }

@@ -21,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${ubuntu.variable} antialiased`}>{children}</body>
+      <body className={`${ubuntu.variable} antialiased`}>
+        <div className="max-w-[1230px] mx-auto px-[15px]">{children}</div>
+      </body>
     </html>
   );
 }
