@@ -34,17 +34,17 @@ export const Files = () => {
         prevAudio.pause();
       }
       setFiles((prev) =>
-        prev.map((f) =>
-          f.id === currentPlayingFile.current ? { ...f, isPlaying: false } : f
-        )
+        prev.map((f) => (f.id === id ? { ...f, isPlaying: false } : f))
       );
+      audioElement.currentTime = 0;
     }
 
-    audioElement.currentTime = 0;
     audioElement.play();
     currentPlayingFile.current = id;
     setFiles((prev) =>
-      prev.map((f) => (f.id === id ? { ...f, isPlaying: true } : f))
+      prev.map((f) =>
+        f.id === id ? { ...f, isPlaying: true } : { ...f, isPlaying: false }
+      )
     );
   };
 
