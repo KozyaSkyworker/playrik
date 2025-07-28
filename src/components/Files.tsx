@@ -10,11 +10,43 @@ import { AudioFile, File } from "./File";
 export const Files = () => {
   const [files, setFiles] = useState<AudioFile[]>([]);
 
-  const filesRefs = useRef<
-    Record<string, { audio: HTMLAudioElement; isPlaying: boolean }>
-  >({});
-  const currentPlayingFile = useRef<HTMLAudioElement>(undefined);
+  const filesRefs = useRef<Record<string, HTMLAudioElement>>({});
+  const currentPlayingFile = useRef<string | null>(null);
   const inputFileRef = useRef<HTMLInputElement>(null);
+
+  const handlePlayPause = (id: string) => {
+    const audioElement = filesRefs.current[id];
+
+    if (!audioElement) return;
+
+    if (currentPlayingFile.current === id) {
+      audioElement.pause();
+      currentPlayingFile.current = null;
+      setFiles((prev) =>
+        prev.map((f) => (f.id === id ? { ...f, isPlaying: false } : f))
+      );
+      return;
+    }
+
+    if (currentPlayingFile.current) {
+      const prevAudio = filesRefs.current[currentPlayingFile.current];
+      if (prevAudio) {
+        prevAudio.pause();
+      }
+      setFiles((prev) =>
+        prev.map((f) =>
+          f.id === currentPlayingFile.current ? { ...f, isPlaying: false } : f
+        )
+      );
+    }
+
+    audioElement.currentTime = 0;
+    audioElement.play();
+    currentPlayingFile.current = id;
+    setFiles((prev) =>
+      prev.map((f) => (f.id === id ? { ...f, isPlaying: true } : f))
+    );
+  };
 
   const {
     uploadFiles,
@@ -76,10 +108,10 @@ export const Files = () => {
             {files.map((file) => (
               <File
                 key={file.id}
-                {...file}
-                setFiles={setFiles}
                 filesRefs={filesRefs}
                 currentPlayingFile={currentPlayingFile}
+                onPlayPause={handlePlayPause}
+                {...file}
               />
             ))}
           </div>

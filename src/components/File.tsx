@@ -1,4 +1,4 @@
-import { Dispatch, RefObject, SetStateAction } from "react";
+import { RefObject } from "react";
 
 import { FavIcon } from "@/shared/icons/Fav";
 import { FavFillIcon } from "@/shared/icons/FavFill";
@@ -22,17 +22,9 @@ export interface AudioFile {
 }
 
 interface Props extends AudioFile {
-  filesRefs: RefObject<
-    Record<
-      string,
-      {
-        audio: HTMLAudioElement;
-        isPlaying: boolean;
-      }
-    >
-  >;
-  currentPlayingFile: RefObject<HTMLAudioElement | undefined>;
-  setFiles: Dispatch<SetStateAction<AudioFile[]>>;
+  filesRefs: RefObject<Record<string, HTMLAudioElement>>;
+  currentPlayingFile: RefObject<string | null>;
+  onPlayPause: (id: string) => void;
 }
 
 export const File = ({
@@ -42,8 +34,12 @@ export const File = ({
   isPlaying,
   filesRefs,
   currentPlayingFile,
-  setFiles,
+  onPlayPause,
 }: Props) => {
+  const handlePlayPause = () => {
+    onPlayPause(id);
+  };
+
   return (
     <div className="bg-gray-100 rounded p-4">
       <Heading variant="h3">{title}</Heading>
@@ -52,10 +48,7 @@ export const File = ({
         ref={(ref) => {
           if (!filesRefs.current || !ref) return;
 
-          filesRefs.current[id] = {
-            audio: ref,
-            isPlaying: false,
-          };
+          filesRefs.current[id] = ref;
 
           return () => {
             if (filesRefs.current) {
@@ -65,44 +58,18 @@ export const File = ({
         }}
         controls
         src={src}
+        onPlay={() => (currentPlayingFile.current = id)}
+        onPause={() => {
+          if (currentPlayingFile.current === id) {
+            currentPlayingFile.current = null;
+          }
+        }}
       />
       <div className="flex gap-3">
         <Button variant="icon-filled">
           <PrevIcon />
         </Button>
-        <Button
-          variant="icon-filled"
-          onClick={() => {
-            if (currentPlayingFile.current) {
-              currentPlayingFile.current.pause();
-              filesRefs.current[id].isPlaying = false;
-
-              if (currentPlayingFile.current !== filesRefs.current[id].audio) {
-                currentPlayingFile.current = filesRefs.current[id].audio;
-                currentPlayingFile.current.currentTime = 0;
-                currentPlayingFile.current.play();
-                filesRefs.current[id].isPlaying = true;
-              }
-            } else {
-              currentPlayingFile.current = filesRefs.current[id].audio;
-              currentPlayingFile.current.play();
-              filesRefs.current[id].isPlaying = true;
-            }
-
-            setFiles((prev) =>
-              prev.map((itm) => {
-                if (itm.id === id) {
-                  return {
-                    ...itm,
-                    isPlaying: filesRefs.current[id].isPlaying,
-                  };
-                }
-
-                return itm;
-              })
-            );
-          }}
-        >
+        <Button variant="icon-filled" onClick={handlePlayPause}>
           {isPlaying ? <PauseIcon /> : <PlayIcon />}
         </Button>
         <Button variant="icon-filled">
