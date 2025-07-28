@@ -9,6 +9,7 @@ export const useDragAndDrop = () => {
       src: URL.createObjectURL(file),
       title: file.name.split(".")[0],
       isPlaying: false,
+      isLiked: false,
       id: crypto.randomUUID(),
     }));
 

@@ -48,6 +48,14 @@ export const Files = () => {
     );
   };
 
+  const onLikedToggle = (id: string) => {
+    setFiles((prev) =>
+      prev.map((itm) =>
+        itm.id === id ? { ...itm, isLiked: !itm.isLiked } : itm
+      )
+    );
+  };
+
   const {
     uploadFiles,
     isFilesDragging,
@@ -104,13 +112,14 @@ export const Files = () => {
       {files && files.length > 0 && (
         <div className="flex flex-col gap-4">
           <Heading variant="h2">Uploaded files</Heading>
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-10">
             {files.map((file) => (
               <File
                 key={file.id}
                 filesRefs={filesRefs}
                 currentPlayingFile={currentPlayingFile}
                 onPlayPause={handlePlayPause}
+                onLikedToggle={onLikedToggle}
                 {...file}
               />
             ))}
