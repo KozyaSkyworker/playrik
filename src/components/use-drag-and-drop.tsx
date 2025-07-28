@@ -1,12 +1,15 @@
 import { useState } from "react";
+import { AudioFile } from "./File";
 
 export const useDragAndDrop = () => {
   const [isFilesDragging, setIsFilesDragging] = useState(false);
 
-  const uploadFiles = (filesToUpload: FileList) =>
+  const uploadFiles = (filesToUpload: FileList): AudioFile[] =>
     Array.from(filesToUpload).map((file) => ({
       src: URL.createObjectURL(file),
       title: file.name.split(".")[0],
+      isPlaying: false,
+      id: crypto.randomUUID(),
     }));
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {

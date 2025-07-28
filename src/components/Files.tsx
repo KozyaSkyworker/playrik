@@ -10,6 +10,12 @@ import { AudioFile, File } from "./File";
 export const Files = () => {
   const [files, setFiles] = useState<AudioFile[]>([]);
 
+  const filesRefs = useRef<
+    Record<string, { audio: HTMLAudioElement; isPlaying: boolean }>
+  >({});
+  const currentPlayingFile = useRef<HTMLAudioElement>(undefined);
+  const inputFileRef = useRef<HTMLInputElement>(null);
+
   const {
     uploadFiles,
     isFilesDragging,
@@ -17,8 +23,6 @@ export const Files = () => {
     handleDragLeave,
     handleDragOver,
   } = useDragAndDrop();
-
-  const inputFileRef = useRef<HTMLInputElement>(null);
 
   return (
     <div className="flex flex-col gap-4">
@@ -70,7 +74,13 @@ export const Files = () => {
           <Heading variant="h2">Uploaded files</Heading>
           <div className="flex flex-col gap-4">
             {files.map((file) => (
-              <File key={crypto.randomUUID()} {...file} />
+              <File
+                key={file.id}
+                {...file}
+                setFiles={setFiles}
+                filesRefs={filesRefs}
+                currentPlayingFile={currentPlayingFile}
+              />
             ))}
           </div>
         </div>
