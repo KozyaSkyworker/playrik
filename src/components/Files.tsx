@@ -32,6 +32,7 @@ export const Files = () => {
       const prevAudio = filesRefs.current[currentPlayingFile.current];
       if (prevAudio) {
         prevAudio.pause();
+        prevAudio.currentTime = 0
       }
       setFiles((prev) =>
         prev.map((f) => (f.id === id ? { ...f, isPlaying: false } : f))
