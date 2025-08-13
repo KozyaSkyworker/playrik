@@ -13,6 +13,7 @@ import { UnMuteIcon } from "@/shared/icons/UnMute";
 
 import { Button } from "@/shared/ui/Button";
 import { Heading } from "@/shared/ui/Heading";
+import { getFormatedTime } from "@/shared/utils/getFormatedTime";
 
 export interface AudioFile {
   src: string;
@@ -90,11 +91,7 @@ export const File = ({
           setIsLoading(false);
         }}
         onTimeUpdate={() => {
-          setTime(
-            (filesRefs.current[id]?.currentTime /
-              filesRefs.current[id]?.duration) *
-              100
-          );
+          setTime(filesRefs.current[id]?.currentTime);
         }}
       />
       {isLoading ? (
@@ -103,12 +100,21 @@ export const File = ({
         <div className="flex flex-col gap-4">
           <Heading variant="h3">{title}</Heading>
           <div>
-            <div className="w-full h-[5px] bg-teal-200 rounded">
-              <div
-                className="h-[5px] bg-teal-600 rounded"
-                style={{ width: `${Math.round(time)}%` }}
-              />
+            <div className="flex gap-4">
+              <span>{getFormatedTime(filesRefs.current[id]?.currentTime)}</span>
+              <span>{getFormatedTime(filesRefs.current[id]?.duration)}</span>
             </div>
+            <input className="w-full h-[5px]  bg-teal-600 rounded" 
+              type="range" 
+              min={0} 
+              max={filesRefs.current[id]?.duration} 
+              value={time} 
+              onChange={(e)=> {
+                const newTime = Number(e.target.value)
+                setTime(newTime)
+                filesRefs.current[id].currentTime = newTime
+              }}
+            />
           </div>
           <div className="flex gap-3">
             <Button variant="icon-filled">
