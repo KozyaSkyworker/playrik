@@ -2,18 +2,17 @@ import { RefObject, useState } from "react";
 
 import { FavIcon } from "@/shared/icons/Fav";
 import { FavFillIcon } from "@/shared/icons/FavFill";
-import { MuteIcon } from "@/shared/icons/Mute";
 import { NextIcon } from "@/shared/icons/Next";
 import { PauseIcon } from "@/shared/icons/Pause";
 import { PlayIcon } from "@/shared/icons/Play";
 import { PrevIcon } from "@/shared/icons/Prev";
 import { RepeatIcon } from "@/shared/icons/Repeat";
 import { ShuffleIcon } from "@/shared/icons/Shuffle";
-import { UnMuteIcon } from "@/shared/icons/UnMute";
 
 import { Button } from "@/shared/ui/Button";
 import { Heading } from "@/shared/ui/Heading";
 import { getFormatedTime } from "@/shared/utils/getFormatedTime";
+import { LOCAL_STORAGE_KEY, VOLUME_DEFAULT } from "@/shared/constants/volume";
 
 export interface AudioFile {
   src: string;
@@ -49,17 +48,14 @@ export const File = ({
     onLikedToggle(id);
   };
 
-  const toggleMuted = () => {
-    setIsMuted((prev) => {
-      const newMutedVal = !prev;
-      filesRefs.current[id].volume = newMutedVal ? 0.0 : 1.0;
-      return newMutedVal;
-    });
-  };
-
   const [time, setTime] = useState(0);
-  const [isMuted, setIsMuted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  if (filesRefs.current[id]) {
+    filesRefs.current[id].volume = localStorage.getItem(LOCAL_STORAGE_KEY)
+      ? Number(localStorage.getItem(LOCAL_STORAGE_KEY)) / 100
+      : VOLUME_DEFAULT;
+  }
 
   return (
     <div className="bg-slate-100 rounded p-4">
@@ -104,15 +100,16 @@ export const File = ({
               <span>{getFormatedTime(filesRefs.current[id]?.currentTime)}</span>
               <span>{getFormatedTime(filesRefs.current[id]?.duration)}</span>
             </div>
-            <input className="w-full h-[5px]  bg-teal-600 rounded" 
-              type="range" 
-              min={0} 
-              max={filesRefs.current[id]?.duration} 
-              value={time} 
-              onChange={(e)=> {
-                const newTime = Number(e.target.value)
-                setTime(newTime)
-                filesRefs.current[id].currentTime = newTime
+            <input
+              className="w-full h-[5px]  bg-teal-600 rounded"
+              type="range"
+              min={0}
+              max={filesRefs.current[id]?.duration}
+              value={time}
+              onChange={(e) => {
+                const newTime = Number(e.target.value);
+                setTime(newTime);
+                filesRefs.current[id].currentTime = newTime;
               }}
             />
           </div>
@@ -135,10 +132,6 @@ export const File = ({
             <Button variant="icon">
               <ShuffleIcon />
             </Button>
-            <Button variant="icon" onClick={toggleMuted}>
-              {isMuted ? <MuteIcon /> : <UnMuteIcon />}
-            </Button>
-            <input type="range" />
           </div>
         </div>
       )}
