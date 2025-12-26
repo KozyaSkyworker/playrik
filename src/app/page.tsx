@@ -1,5 +1,10 @@
-import { Files } from "@/components/Files";
+import { Player } from "@/components/Player";
+import { PlayerProvider } from "@/providers/PlayerContext";
 
 export default function Home() {
-  return <Files />;
+  return (
+    <PlayerProvider>
+      <Player />
+    </PlayerProvider>
+  );
 }

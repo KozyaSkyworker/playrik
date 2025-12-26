@@ -1,4 +1,4 @@
-import { RefObject, useState } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 
 import { FavIcon } from "@/shared/icons/Fav";
 import { FavFillIcon } from "@/shared/icons/FavFill";
@@ -13,20 +13,13 @@ import { Button } from "@/shared/ui/Button";
 import { Heading } from "@/shared/ui/Heading";
 import { getFormatedTime } from "@/shared/utils/getFormatedTime";
 import { LOCAL_STORAGE_KEY, VOLUME_DEFAULT } from "@/shared/constants/volume";
-
-export interface AudioFile {
-  src: string;
-  title: string;
-  isPlaying: boolean;
-  isLiked: boolean;
-  id: string;
-}
+import { AudioFile } from "@/types/player";
+import { usePlayerContext } from "@/providers/PlayerContext";
 
 interface Props extends AudioFile {
-  filesRefs: RefObject<Record<string, HTMLAudioElement>>;
-  currentPlayingFile: RefObject<string | null>;
-  onPlayPause: (id: string) => void;
-  onLikedToggle: (id: string) => void;
+  // currentPlayingFile: RefObject<string | null>;
+  // onPlayPause: (id: string) => void;
+  // onLikedToggle: (id: string) => void;
 }
 
 export const File = ({
@@ -35,60 +28,73 @@ export const File = ({
   src,
   isPlaying,
   isLiked,
-  filesRefs,
-  currentPlayingFile,
-  onPlayPause,
-  onLikedToggle,
-}: Props) => {
-  const handlePlayPause = () => {
-    onPlayPause(id);
-  };
+}: // filesRefs,
+// currentPlayingFile,
+// onPlayPause,
+// onLikedToggle,
+Props) => {
+  const { filesRefs, setFilesRefs } = usePlayerContext();
 
-  const toggleLiked = () => {
-    onLikedToggle(id);
-  };
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const [time, setTime] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
 
-  if (filesRefs.current[id]) {
-    filesRefs.current[id].volume = localStorage.getItem(LOCAL_STORAGE_KEY)
-      ? Number(localStorage.getItem(LOCAL_STORAGE_KEY)) / 100
-      : VOLUME_DEFAULT;
-  }
+  const handlePlayPause = () => {
+    // onPlayPause(id);
+  };
+
+  const toggleLiked = () => {
+    // onLikedToggle(id);
+  };
+
+  // if (filesRefs.current[id]) {
+  //   filesRefs.current[id].volume = localStorage.getItem(LOCAL_STORAGE_KEY)
+  //     ? Number(localStorage.getItem(LOCAL_STORAGE_KEY)) / 100
+  //     : VOLUME_DEFAULT;
+  // }
+
+  useEffect(() => {
+    if (!filesRefs || !audioRef || !audioRef.current) return;
+
+    const audio = audioRef.current;
+    setFilesRefs((prev) => ({ ...prev, [id]: audio }));
+
+    return () => {
+      if (filesRefs) {
+        setFilesRefs((prev) => {
+          const newItems = prev;
+          delete newItems[id];
+          return newItems;
+        });
+      }
+    };
+  }, []);
+
+  console.log(filesRefs);
 
   return (
     <div className="bg-slate-100 rounded p-4">
       <audio
         data-id={id}
-        ref={(ref) => {
-          if (!filesRefs.current || !ref) return;
-
-          filesRefs.current[id] = ref;
-
-          return () => {
-            if (filesRefs.current) {
-              delete filesRefs.current[id];
-            }
-          };
-        }}
+        ref={audioRef}
         controls
         src={src}
-        onPlay={() => (currentPlayingFile.current = id)}
-        onPause={() => {
-          if (currentPlayingFile.current === id) {
-            currentPlayingFile.current = null;
-          }
-        }}
+        // onPlay={() => (currentPlayingFile.current = id)}
+        // onPause={() => {
+        //   if (currentPlayingFile.current === id) {
+        //     currentPlayingFile.current = null;
+        //   }
+        // }}
         onLoadStart={() => {
           setIsLoading(true);
         }}
         onLoadedData={() => {
           setIsLoading(false);
         }}
-        onTimeUpdate={() => {
-          setTime(filesRefs.current[id]?.currentTime);
-        }}
+        // onTimeUpdate={() => {
+        //   setTime(filesRefs.current[id]?.currentTime);
+        // }}
       />
       {isLoading ? (
         "Loading..."
@@ -97,19 +103,19 @@ export const File = ({
           <Heading variant="h3">{title}</Heading>
           <div>
             <div className="flex gap-4">
-              <span>{getFormatedTime(filesRefs.current[id]?.currentTime)}</span>
-              <span>{getFormatedTime(filesRefs.current[id]?.duration)}</span>
+              <span>{getFormatedTime(filesRefs[id]?.currentTime)}</span>
+              <span>{getFormatedTime(filesRefs[id]?.duration)}</span>
             </div>
             <input
               className="w-full h-[5px]  bg-teal-600 rounded"
               type="range"
               min={0}
-              max={filesRefs.current[id]?.duration}
+              // max={filesRefs.current[id]?.duration}
               value={time}
               onChange={(e) => {
                 const newTime = Number(e.target.value);
                 setTime(newTime);
-                filesRefs.current[id].currentTime = newTime;
+                // filesRefs.current[id].currentTime = newTime;
               }}
             />
           </div>

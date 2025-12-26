@@ -1,5 +1,5 @@
+import { AudioFile } from "@/types/player";
 import { useState } from "react";
-import { AudioFile } from "./File";
 
 export const useDragAndDrop = () => {
   const [isFilesDragging, setIsFilesDragging] = useState(false);
