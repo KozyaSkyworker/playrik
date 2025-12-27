@@ -6,22 +6,28 @@ import { AudioFile } from "@/types/player";
 
 export const PlayerProvider = ({ children }: { children: ReactNode }) => {
   const [files, setFiles] = useState<AudioFile[]>([]);
-  const [currentFile, setCurrentFile] = useState<AudioFile | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const prevPlayingFile = useRef<HTMLAudioElement | null>(null);
 
   const [filesRefs, setFilesRefs] = useState<Record<string, HTMLAudioElement>>(
     {}
   );
 
+  const [time, setTime] = useState(0);
+
   const value = useMemo(
     () => ({
       files,
       setFiles,
-      currentFile,
-      setCurrentFile,
+      prevPlayingFile,
       filesRefs,
       setFilesRefs,
+      currentIndex,
+      setCurrentIndex,
+      time,
+      setTime,
     }),
-    [currentFile, files, filesRefs]
+    [currentIndex, files, filesRefs, time]
   );
 
   return <PlayerContext value={value}>{children}</PlayerContext>;

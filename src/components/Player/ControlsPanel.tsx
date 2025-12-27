@@ -1,26 +1,35 @@
 "use client";
 
-import { RefObject, useState } from "react";
+import { useState } from "react";
 
 import { MuteIcon } from "@/shared/icons/Mute";
 import { UnMuteIcon } from "@/shared/icons/UnMute";
 
 import { Button } from "@/shared/ui/Button";
 import { LOCAL_STORAGE_KEY, VOLUME_DEFAULT } from "@/shared/constants/volume";
-import { PrevIcon } from "@/shared/icons/Prev";
 import { NextIcon } from "@/shared/icons/Next";
 import { RepeatIcon } from "@/shared/icons/Repeat";
 import { ShuffleIcon } from "@/shared/icons/Shuffle";
 import { PlayIcon } from "@/shared/icons/Play";
-import { getFormatedTime } from "@/shared/utils/getFormatedTime";
 import { Heading } from "@/shared/ui/Heading";
 import { usePlayerContext } from "@/providers/PlayerContext";
 import { PauseIcon } from "@/shared/icons/Pause";
 import { FavIcon } from "@/shared/icons/Fav";
 import { FavFillIcon } from "@/shared/icons/FavFill";
+import { PrevIcon } from "@/shared/icons/Prev";
+import { getFormatedTime } from "@/shared/utils/getFormatedTime";
 
 export const ControlsPanel = () => {
-  const { files, currentFile, filesRefs } = usePlayerContext();
+  const {
+    files,
+    setFiles,
+    filesRefs,
+    currentIndex,
+    setTime,
+    time,
+    prevPlayingFile,
+    setCurrentIndex,
+  } = usePlayerContext();
 
   const [isMuted, setIsMuted] = useState(false);
   const [localVolume, setLocalVolume] = useState(
@@ -29,41 +38,100 @@ export const ControlsPanel = () => {
       VOLUME_DEFAULT
   );
 
-  const [time, setTime] = useState(0);
+  const muted = isMuted || localVolume === 0;
 
   const toggleMuted = () => {
-    setIsMuted((m) => !m);
+    const newIsMuted = !isMuted;
+
+    // if (newIsMuted) {
+    //   setLocalVolume(0)
+    //   localStorage.setItem(LOCAL_STORAGE_KEY, '0');
+    // } else {
+
+    // }
+
+    setIsMuted(newIsMuted);
   };
 
-  const muted = isMuted || localVolume === 0;
+  const handlePlay = (fileId: string) => {
+    const cur = filesRefs[fileId];
+    if (!cur) return;
+
+    if (prevPlayingFile.current && cur !== prevPlayingFile.current) {
+      prevPlayingFile.current.pause();
+      prevPlayingFile.current.currentTime = 0;
+    }
+
+    setCurrentIndex(files.findIndex((file) => file.id === fileId));
+    cur.play();
+  };
+
+  const handlePause = (fileId: string) => {
+    const cur = filesRefs[fileId];
+    if (!cur) return;
+
+    cur.pause();
+  };
+
+  const startTrackByIndex = (newIndex: number) => {
+    if (newIndex < 0 || newIndex > files.length - 1) {
+      return;
+    }
+
+    const newFile = files.at(newIndex);
+    if (newFile) {
+      handlePlay(newFile?.id);
+      setCurrentIndex(newIndex);
+    }
+  };
+
+  const toggleLiked = () => {
+    setFiles((files) =>
+      files.map((file) => {
+        if (file.id === id) {
+          return { ...file, isLiked: !file.isLiked };
+        }
+
+        return file;
+      })
+    );
+  };
 
   if (files.length < 1) {
     return null;
   }
 
-  const { id, isLiked, isPlaying, src, title } = currentFile || files[0];
+  const { id, isLiked, title } = files[currentIndex];
 
-  const handlePlayPause = () => {
-    const audioElement = filesRefs[id];
-    if (!audioElement) return;
-
-    audioElement.play();
-  };
+  // с задержкой небольшой меняется
+  const isPlaying = filesRefs[id]?.duration > 0 && !filesRefs[id]?.paused;
 
   return (
     <div className="fixed bottom-0 bg-slate-300 w-[1200px] h-max p-4 rounded-t">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-2">
-          <Button variant="icon-filled">
+          <Button
+            variant="icon-filled"
+            onClick={() => startTrackByIndex(currentIndex - 1)}
+          >
             <PrevIcon />
           </Button>
-          <Button variant="icon-filled" onClick={handlePlayPause}>
+          <Button
+            variant="icon-filled"
+            onClick={() => {
+              if (isPlaying) handlePause(id);
+              else handlePlay(id);
+            }}
+          >
             {isPlaying ? <PauseIcon /> : <PlayIcon />}
           </Button>
-          <Button variant="icon-filled">
+          <Button
+            variant="icon-filled"
+            onClick={() => startTrackByIndex(currentIndex + 1)}
+          >
             <NextIcon />
           </Button>
-          <Button variant="icon">
+          <Button variant="icon" onClick={toggleLiked}>
             {isLiked ? <FavFillIcon /> : <FavIcon />}
           </Button>
           <Button variant="icon">
@@ -76,23 +144,26 @@ export const ControlsPanel = () => {
 
         <div className="flex flex-col gap-1 grow">
           <Heading variant="h3">{title}</Heading>
-          <div className="flex items-center justify-between">
-            <span>123</span>
-            <span>321</span>
+          <div className="grow">
+            <div className="flex align-center justify-between">
+              <span>{getFormatedTime(filesRefs[id]?.currentTime)}</span>
+              <span>{getFormatedTime(filesRefs[id]?.duration)}</span>
+            </div>
+            <input
+              className="w-full h-[5px]  bg-teal-600 rounded"
+              type="range"
+              min={0}
+              max={String(filesRefs[id]?.duration)}
+              value={time}
+              onChange={(e) => {
+                const newTime = Number(e.target.value);
+                setTime(newTime);
+                if (filesRefs[id]) {
+                  filesRefs[id].currentTime = newTime;
+                }
+              }}
+            />
           </div>
-          <input
-            className="w-full h-[5px]  bg-teal-600 rounded"
-            type="range"
-            min={0}
-            // max={filesRefs.current[id]?.duration}
-            max={123}
-            value={time}
-            onChange={(e) => {
-              const newTime = Number(e.target.value);
-              // setTime(newTime);
-              // filesRefs.current[id].currentTime = newTime;
-            }}
-          />
         </div>
 
         <div className="flex items-center gap-2">

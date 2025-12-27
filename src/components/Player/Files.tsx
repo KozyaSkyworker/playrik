@@ -14,7 +14,7 @@ export const Files = () => {
   return (
     <div className="flex flex-col gap-4">
       <Heading variant="h2">Uploaded files</Heading>
-      <div className="flex flex-col gap-10 pb-[200px]">
+      <div className="flex flex-col gap-4 pb-[200px]">
         {files.map((file) => (
           <File
             key={file.id}

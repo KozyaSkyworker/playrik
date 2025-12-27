@@ -25,7 +25,6 @@ export const useDragAndDrop = () => {
   };
 
   const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
-    console.log(e);
     setIsFilesDragging(false);
   };
 
