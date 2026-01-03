@@ -4,4 +4,5 @@ export interface AudioFile {
   isPlaying: boolean;
   isLiked: boolean;
   id: string;
+  duration?: number;
 }

@@ -80,11 +80,22 @@ export const File = ({ id, title, src, isLiked }: AudioFile) => {
     const audio = audioRef.current;
     setFilesRefs((prev) => ({ ...prev, [id]: audio }));
 
+    const onLoadedMetadata = () => {
+      setFiles((prev) =>
+        prev.map((file) =>
+          file.id === id ? { ...file, duration: audio.duration } : file
+        )
+      );
+    };
+
+    audio.addEventListener("loadedmetadata", onLoadedMetadata);
+
     return () => {
       if (filesRefs) {
         // filesRefs[id]?.pause();
         setFilesRefs((prev) => {
           const newItems = prev;
+          audio.removeEventListener("loadedmetadata", onLoadedMetadata);
           delete newItems[id];
           return newItems;
         });

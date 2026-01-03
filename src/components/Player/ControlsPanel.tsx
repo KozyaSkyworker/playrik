@@ -101,7 +101,7 @@ export const ControlsPanel = () => {
     return null;
   }
 
-  const { id, isLiked, title } = files[currentIndex];
+  const { id, isLiked, title, duration } = files[currentIndex];
 
   // с задержкой небольшой меняется
   const isPlaying = filesRefs[id]?.duration > 0 && !filesRefs[id]?.paused;
@@ -147,7 +147,9 @@ export const ControlsPanel = () => {
           <div className="grow">
             <div className="flex align-center justify-between">
               <span>{getFormatedTime(filesRefs[id]?.currentTime)}</span>
-              <span>{getFormatedTime(filesRefs[id]?.duration)}</span>
+              <span>
+                {getFormatedTime(duration ?? filesRefs[id]?.duration)}
+              </span>
             </div>
             <input
               className="w-full h-[5px]  bg-teal-600 rounded"
