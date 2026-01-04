@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { MuteIcon } from "@/shared/icons/Mute";
 import { UnMuteIcon } from "@/shared/icons/UnMute";
@@ -31,6 +31,27 @@ export const ControlsPanel = () => {
     setCurrentIndex,
   } = usePlayerContext();
 
+  const broadcastChannel = useRef<BroadcastChannel | null>(null);
+
+  useEffect(() => {
+    const channel = new BroadcastChannel("audio-player");
+    broadcastChannel.current = channel;
+
+    channel.onmessage = (event) => {
+      const { type, fileId } = event.data;
+      const currentFile = filesRefs[files[currentIndex].id];
+
+      if (type === "PLAY" && currentFile && fileId !== files[currentIndex].id) {
+        currentFile.pause();
+      }
+    };
+
+    return () => {
+      channel.close();
+      broadcastChannel.current = null;
+    };
+  }, [currentIndex, files, filesRefs]);
+
   const [isMuted, setIsMuted] = useState(false);
   const [localVolume, setLocalVolume] = useState(
     (typeof window !== "undefined" &&
@@ -57,6 +78,10 @@ export const ControlsPanel = () => {
     const cur = filesRefs[fileId];
     if (!cur) return;
 
+    if (broadcastChannel.current) {
+      broadcastChannel.current.postMessage({ type: "PLAY", fileId });
+    }
+
     if (prevPlayingFile.current && cur !== prevPlayingFile.current) {
       prevPlayingFile.current.pause();
       prevPlayingFile.current.currentTime = 0;
@@ -69,6 +94,10 @@ export const ControlsPanel = () => {
   const handlePause = (fileId: string) => {
     const cur = filesRefs[fileId];
     if (!cur) return;
+
+    if (broadcastChannel.current) {
+      broadcastChannel.current.postMessage({ type: "PAUSE", fileId });
+    }
 
     cur.pause();
   };
