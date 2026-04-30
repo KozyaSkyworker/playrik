@@ -56,22 +56,28 @@ export const ControlsPanel = () => {
   const [localVolume, setLocalVolume] = useState(
     (typeof window !== "undefined" &&
       Number(localStorage.getItem(LOCAL_STORAGE_KEY))) ||
-      VOLUME_DEFAULT
+      VOLUME_DEFAULT,
   );
+
+  const lastVolume = useRef(localVolume);
 
   const muted = isMuted || localVolume === 0;
 
   const toggleMuted = () => {
-    const newIsMuted = !isMuted;
+    setIsMuted((prev) => {
+      const newIsMuted = !isMuted;
 
-    // if (newIsMuted) {
-    //   setLocalVolume(0)
-    //   localStorage.setItem(LOCAL_STORAGE_KEY, '0');
-    // } else {
+      if (newIsMuted) {
+        setLocalVolume(0);
+        localStorage.setItem(LOCAL_STORAGE_KEY, "0");
+        lastVolume.current = localVolume;
+      } else {
+        setLocalVolume(lastVolume.current || VOLUME_DEFAULT);
+        localStorage.setItem(LOCAL_STORAGE_KEY, String(localVolume));
+      }
 
-    // }
-
-    setIsMuted(newIsMuted);
+      return !prev;
+    });
   };
 
   const handlePlay = (fileId: string) => {
@@ -122,7 +128,7 @@ export const ControlsPanel = () => {
         }
 
         return file;
-      })
+      }),
     );
   };
 
